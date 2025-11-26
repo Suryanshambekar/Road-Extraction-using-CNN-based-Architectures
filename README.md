@@ -28,6 +28,7 @@ Python 3.10+ (tested on 3.13) with:
 - `torch==2.7.1`, `torchvision==0.22.1`
 - `segmentation-models-pytorch==0.5.0`
 - `opencv-python`, `numpy`, `pillow`, `albumentations`
+- `requests`
 
 Install everything from the Deployment folder:
 ```bash
@@ -64,9 +65,15 @@ Both notebooks include:
 
 ## Deploying to Streamlit Community Cloud
 1. Fork/clone this repo.
-2. Upload/commit `Deployment/streamlit_app.py`, `Deployment/inference_utils.py`, `Deployment/requirements.txt`, and place checkpoints in a storage bucket or attach them as secrets (recommended—don’t commit large `.pth` files).
+2. Upload/commit `Deployment/streamlit_app.py`, `Deployment/inference_utils.py`, `Deployment/requirements.txt`, and place checkpoints in a storage bucket (S3, GDrive, HuggingFace, etc.).
 3. Create a Streamlit app at [share.streamlit.io](https://share.streamlit.io), targeting `Deployment/streamlit_app.py`.
-4. Configure secrets or environment variables so the app can download/load your weights at startup.
+4. Add download URLs to `.streamlit/secrets.toml` so the app can fetch weights automatically:
+   ```toml
+   [weights]
+   SEGNET_WEIGHTS_URL = "https://<your-storage>/best_model_Segnet.pth"
+   DEEPLAB_WEIGHTS_URL = "https://<your-storage>/best_model_DeeplabV3Plus.pth"
+   ```
+   Secrets take priority when the expected local files are missing and will be downloaded into `Deployment/model_cache/`.
 
 ## GitHub deployment
 1. Initialize git (if needed) and add this repo as remote:

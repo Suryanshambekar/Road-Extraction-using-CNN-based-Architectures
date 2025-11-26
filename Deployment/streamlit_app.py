@@ -5,7 +5,8 @@ import numpy as np
 import cv2
 import torch
 import io
-import os
+from pathlib import Path
+import requests
 from inference_utils import load_model, get_preprocessing, postprocess_mask
 
 st.set_page_config(page_title="Road Segmentation", layout="wide")
@@ -23,15 +24,85 @@ model_option = st.sidebar.selectbox(
     help="Choose which model architecture to use for inference"
 )
 
-# Automatically set weights path based on model selection
-if model_option == "SegNet":
-    weights_path = os.path.join("..", "best_model_Segnet.pth")
-    encoder_name = 'vgg16'
-    model_type = 'segnet'
-else:  # DeepLabV3Plus
-    weights_path = os.path.join("..", "best_model_DeeplabV3Plus.pth")
-    encoder_name = 'resnet50'
-    model_type = 'deeplabv3plus'
+# Paths and download configuration
+APP_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = APP_DIR.parent
+MODEL_CACHE_DIR = APP_DIR / "model_cache"
+MODEL_CACHE_DIR.mkdir(exist_ok=True)
+
+MODEL_CONFIG = {
+    "SegNet": {
+        "default_path": PROJECT_ROOT / "best_model_Segnet.pth",
+        "cache_name": "segnet_weights.pth",
+        "encoder": "vgg16",
+        "model_type": "segnet",
+        "secret_key": "SEGNET_WEIGHTS_URL",
+    },
+    "DeepLabV3Plus": {
+        "default_path": PROJECT_ROOT / "best_model_DeeplabV3Plus.pth",
+        "cache_name": "deeplabv3plus_weights.pth",
+        "encoder": "resnet50",
+        "model_type": "deeplabv3plus",
+        "secret_key": "DEEPLAB_WEIGHTS_URL",
+    },
+}
+
+
+def download_weights(url: str, target_path: Path):
+    """Download model weights from a URL into the cache folder."""
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    response = requests.get(url, stream=True, timeout=60)
+    response.raise_for_status()
+    total = int(response.headers.get("content-length", 0))
+    chunk_size = 1024 * 1024
+    downloaded = 0
+    progress_bar = st.sidebar.progress(0.0, f"Downloading {target_path.name}")
+    with open(target_path, "wb") as f:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                f.write(chunk)
+                downloaded += len(chunk)
+                if total:
+                    progress_bar.progress(min(downloaded / total, 1.0), f"Downloading {target_path.name}")
+    progress_bar.empty()
+
+
+def secret_lookup(secret_key: str):
+    """Look for a secret key either at top level or under [weights]."""
+    if "weights" in st.secrets and secret_key in st.secrets["weights"]:
+        return st.secrets["weights"][secret_key]
+    return st.secrets.get(secret_key)
+
+
+@st.cache_resource
+def resolve_weights(model_name: str):
+    """Ensure weights are available locally, downloading if necessary."""
+    cfg = MODEL_CONFIG[model_name]
+    default_path = cfg["default_path"]
+    if default_path.exists():
+        return str(default_path), cfg["model_type"], cfg["encoder"]
+
+    cached_path = MODEL_CACHE_DIR / cfg["cache_name"]
+    if cached_path.exists():
+        return str(cached_path), cfg["model_type"], cfg["encoder"]
+
+    secret_url = secret_lookup(cfg["secret_key"])
+    if not secret_url:
+        raise FileNotFoundError(
+            f"{default_path} not found and no secret '{cfg['secret_key']}' supplied. "
+            "Provide a download URL via Streamlit secrets."
+        )
+
+    with st.spinner(f"Downloading {model_name} weights..."):
+        download_weights(secret_url, cached_path)
+    return str(cached_path), cfg["model_type"], cfg["encoder"]
+
+
+try:
+    weights_path, model_type, encoder_name = resolve_weights(model_option)
+except Exception as path_err:
+    st.sidebar.error(f"Could not prepare weights: {path_err}")
+    st.stop()
 
 # Display the weights path (read-only)
 st.sidebar.text_input("Model weights path", value=weights_path, disabled=True)
