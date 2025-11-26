@@ -8,6 +8,10 @@ Dual-model road segmentation pipeline that compares **SegNet** and **DeepLabV3+*
 - 🖥️ **Streamlit UI** with model selector, sample image toggle, side-by-side visualization, and mask download.
 - 📓 **Full training notebooks** for reproducibility/tweaks.
 
+The project is deployed on:
+- **Streamlit Cloud**: [https://road-extraction-using-cnn-based-architectures.streamlit.app](https://road-extraction-using-cnn-based-architectures.streamlit.app)
+
+  
 ## Repository layout
 ```
 ├── Deployment/
@@ -63,37 +67,5 @@ Both notebooks include:
 - Loss/metric setup (Dice, IoU)
 - Training + validation loops
 - Checkpoint saving
-
-## Deploying to Streamlit Community Cloud
-1. Fork/clone this repo.
-2. Upload/commit `Deployment/streamlit_app.py`, `Deployment/inference_utils.py`, `Deployment/requirements.txt`, and place checkpoints in a storage bucket (S3, GDrive, HuggingFace, etc.).
-3. Create a Streamlit app at [share.streamlit.io](https://share.streamlit.io), targeting `Deployment/streamlit_app.py`.
-4. Add download URLs to `.streamlit/secrets.toml` so the app can fetch weights automatically:
-   ```toml
-   [weights]
-   SEGNET_WEIGHTS_URL = "https://<your-storage>/best_model_Segnet.pth"
-   DEEPLAB_WEIGHTS_URL = "https://<your-storage>/best_model_DeeplabV3Plus.pth"
-   ```
-   Secrets take priority when the expected local files are missing and will be downloaded into `Deployment/model_cache/`.
-   *Google Drive tip:* you can paste either the direct `uc?export=download` link or the original share link—`gdown` (bundled in `requirements.txt`) handles large-file confirmation prompts automatically.
-
-## GitHub deployment
-1. Initialize git (if needed) and add this repo as remote:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit with Streamlit dual-model inference"
-   git branch -M main
-   git remote add origin https://github.com/Suryanshambekar/Road-Extraction-using-CNN-based-Architectures.git
-   git push -u origin main
-   ```
-2. Add Git LFS or release assets if you plan to ship the `.pth` files via GitHub.
-
-## Next steps
-- Evaluate newer encoders (e.g., EfficientNet) via `segmentation_models_pytorch`.
-- Add metrics panel to the Streamlit app for quick comparisons.
-- Automate download of checkpoints from cloud storage to keep repo lightweight.
-
-Happy mapping! 🌍
 
 
