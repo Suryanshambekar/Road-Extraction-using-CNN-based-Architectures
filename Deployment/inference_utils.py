@@ -101,7 +101,7 @@ def load_model(weights_path: str, model_type='segnet', device='cpu'):
     else:
         raise ValueError(f"Unknown model type: {model_type}. Use 'segnet' or 'deeplabv3plus'")
     
-    state = torch.load(weights_path, map_location=device)
+    state = torch.load(weights_path, map_location=device, weights_only=False)
     model.load_state_dict(state)
     model.to(device)
     model.eval()
