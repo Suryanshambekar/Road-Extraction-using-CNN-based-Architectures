@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Environments
+.env
+.venv
+env/
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Data / checkpoints
+*.pth
+*.pt
+*.ckpt
+*.onnx
+
+# Streamlit cache
+.streamlit/
+
+
