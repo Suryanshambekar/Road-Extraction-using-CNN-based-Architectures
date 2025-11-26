@@ -7,3 +7,4 @@ pillow
 segmentation-models-pytorch==0.5.0
 albumentations
 requests
+gdown

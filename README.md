@@ -27,7 +27,8 @@ Python 3.10+ (tested on 3.13) with:
 - `streamlit==1.40.2`
 - `torch==2.7.1`, `torchvision==0.22.1`
 - `segmentation-models-pytorch==0.5.0`
-- `opencv-python`, `numpy`, `pillow`, `albumentations`
+- `opencv-python-headless`, `numpy`, `pillow`, `albumentations`
+- `requests`, `gdown`
 - `requests`
 
 Install everything from the Deployment folder:
@@ -74,6 +75,7 @@ Both notebooks include:
    DEEPLAB_WEIGHTS_URL = "https://<your-storage>/best_model_DeeplabV3Plus.pth"
    ```
    Secrets take priority when the expected local files are missing and will be downloaded into `Deployment/model_cache/`.
+   *Google Drive tip:* you can paste either the direct `uc?export=download` link or the original share link—`gdown` (bundled in `requirements.txt`) handles large-file confirmation prompts automatically.
 
 ## GitHub deployment
 1. Initialize git (if needed) and add this repo as remote:

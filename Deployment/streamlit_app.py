@@ -7,6 +7,7 @@ import torch
 import io
 from pathlib import Path
 import requests
+import gdown
 from inference_utils import load_model, get_preprocessing, postprocess_mask
 
 st.set_page_config(page_title="Road Segmentation", layout="wide")
@@ -51,6 +52,12 @@ MODEL_CONFIG = {
 def download_weights(url: str, target_path: Path):
     """Download model weights from a URL into the cache folder."""
     target_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if "drive.google.com" in url:
+        with st.spinner(f"Downloading {target_path.name} from Google Drive..."):
+            gdown.download(url, str(target_path), quiet=False, fuzzy=True)
+        return
+
     response = requests.get(url, stream=True, timeout=60)
     response.raise_for_status()
     total = int(response.headers.get("content-length", 0))

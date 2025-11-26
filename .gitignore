@@ -16,7 +16,7 @@ venv/
 .vscode/
 
 # Data / checkpoints
-*.pth
+
 *.pt
 *.ckpt
 *.onnx
