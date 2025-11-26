@@ -1,7 +1,7 @@
 streamlit==1.40.2
 torch==2.7.1
 torchvision==0.22.1
-opencv-python
+opencv-python-headless
 numpy
 pillow
 segmentation-models-pytorch==0.5.0
